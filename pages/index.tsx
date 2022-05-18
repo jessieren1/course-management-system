@@ -1,15 +1,14 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import CustomLayout, { siteTitle } from '../components/customLayout'
 
 const Home: NextPage = () => {
   return (
-    <CustomLayout>
+    <>
       <Head>
-        <title>{siteTitle}</title>
+        <title>{'Next.js Sample Website'}</title>
       </Head>
       <section>main section</section>
-    </CustomLayout>
+    </>
   )
 }
 
