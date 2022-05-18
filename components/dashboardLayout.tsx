@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Layout, Menu, PageHeader, Row, Col, Avatar } from 'antd'
 import Link from 'next/link'
+import { Layout, Menu, PageHeader, Row, Col, Avatar } from 'antd'
 import {
   LogoutOutlined,
   MenuUnfoldOutlined,
@@ -19,7 +19,9 @@ import {
 } from '@ant-design/icons'
 import styles from './dashboard-layout.module.scss'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { logout } from '../lib/httpRequest'
+
 const { SubMenu } = Menu
 const { Header, Content, Sider } = Layout
 const routes = [
@@ -40,20 +42,24 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
-
   const [logoutMenu, setLogoutMenu] = useState(false)
 
   const toggle = () => {
     setCollapsed(!collapsed)
   }
 
-  const showLogoutMenu = () => {
-    setLogoutMenu(!logoutMenu)
-  }
   const userLogout = async () => {
     await logout()
-    router.push('login')
+    router.replace('/dashboard/manager', '/login')
   }
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      //router.replace('login')
+      //router.push(`${router.locale}`)
+      router.push('/dashboard/manager', '/login')
+    }
+  }, [])
 
   return (
     <Layout>
@@ -65,7 +71,14 @@ export default function DashboardLayout({
           minHeight: '100vh',
         }}
       >
-        <div className={styles.logo} />
+        <div className={styles.logo}>
+          <Link href={'/'}>
+            <a>
+              <span style={{ color: '#fff', cursor: 'pointer' }}>CMS</span>
+            </a>
+          </Link>
+        </div>
+
         <Menu
           theme="dark"
           mode="inline"
@@ -101,29 +114,41 @@ export default function DashboardLayout({
           </Menu.Item>
         </Menu>
       </Sider>
+
       <Layout>
         <Header className="site-layout-background" style={{ padding: 0 }}>
-          <Row style={{ justifyContent: 'space-between' }}>
-            <Col className={styles.trigger} onClick={toggle}>
+          <Row>
+            <Col
+              className={styles.trigger}
+              onClick={toggle}
+              style={{ marginRight: 'auto' }}
+            >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </Col>
+
             <Col>
               <Avatar icon={<BellOutlined />} style={{ marginRight: 24 }} />
-              <span onMouseEnter={showLogoutMenu} onMouseLeave={showLogoutMenu}>
-                <Avatar icon={<UserOutlined />} style={{ marginRight: 24 }} />
-              </span>
+            </Col>
+
+            <Col
+              onMouseEnter={() => setLogoutMenu(true)}
+              onMouseLeave={() => setLogoutMenu(false)}
+            >
+              <Avatar icon={<UserOutlined />} style={{ marginRight: 24 }} />
+              {logoutMenu && (
+                <Menu className={styles.logoutMenu} theme="dark">
+                  <Menu.Item key="55" onClick={userLogout}>
+                    <LogoutOutlined />
+                    <span>Logout</span>
+                  </Menu.Item>
+                </Menu>
+              )}
             </Col>
           </Row>
         </Header>
-        {logoutMenu && (
-          <Menu className={styles.logoutMenu} theme="dark">
-            <Menu.Item key="55" onClick={userLogout}>
-              <LogoutOutlined />
-              <span>Logout</span>
-            </Menu.Item>
-          </Menu>
-        )}
+
         <PageHeader className="site-page-header" breadcrumb={{ routes }} />
+
         <Content
           className="site-layout-background"
           style={{
@@ -133,25 +158,9 @@ export default function DashboardLayout({
             backgroundColor: 'white',
           }}
         >
-          Content
+          {children}
         </Content>
       </Layout>
     </Layout>
   )
 }
-// #components-layout-demo-top-side-2 .logo {
-//   float: left;
-//   width: 120px;
-//   height: 31px;
-//   margin: 16px 24px 16px 0;
-//   background: rgba(255, 255, 255, 0.3);
-// }
-
-// .ant-row-rtl #components-layout-demo-top-side-2 .logo {
-//   float: right;
-//   margin: 16px 0 16px 24px;
-// }
-
-// .site-layout-background {
-//   background: #fff;
-// }
