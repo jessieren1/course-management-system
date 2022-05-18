@@ -1,4 +1,5 @@
-import type { NextPage } from 'next'
+import type { ReactElement } from 'react'
+import AuthLayout from '../components/authLayout'
 import Head from 'next/head'
 import { Row, Col, Form, Input, Button, Checkbox, Radio } from 'antd'
 import styles from '../styles/auth.module.scss'
@@ -7,7 +8,7 @@ import { login } from '../lib/httpRequest'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-const Login: NextPage = () => {
+export default function Login() {
   const router = useRouter()
 
   const onFinish = async (values: any) => {
@@ -40,6 +41,7 @@ const Login: NextPage = () => {
                 role: 'student',
               }}
               onFinish={onFinish}
+              validateTrigger="onBlur"
             >
               <Form.Item name="role">
                 <Radio.Group>
@@ -76,7 +78,7 @@ const Login: NextPage = () => {
                   {
                     min: 4,
                     max: 16,
-                    message: `'password' must be 4-16 characters long`,
+                    message: `'password' must be 4-16 characters`,
                   },
                 ]}
               >
@@ -107,4 +109,8 @@ const Login: NextPage = () => {
   )
 }
 
-export default Login
+Login.getLayout = function getLayout(data: any, component: ReactElement) {
+  return <AuthLayout>{component}</AuthLayout>
+}
+
+//export default Login
