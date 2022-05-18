@@ -3,25 +3,35 @@ import Head from 'next/head'
 import { Row, Col, Form, Input, Button, Checkbox, Radio } from 'antd'
 import styles from '../styles/auth.module.scss'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
+import { login } from '../lib/httpRequest'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 const Login: NextPage = () => {
-  const onFinish = (values: any) => {
-    console.log('Received values of form: ', values)
+  const router = useRouter()
+
+  const onFinish = async (values: any) => {
+    const loginResult = await login(values)
+    localStorage.setItem('user', JSON.stringify(loginResult))
+    router.push('dashboard')
   }
+
+  useEffect(() => {
+    if (localStorage.getItem('user')) {
+      router.push('dashboard')
+    }
+  }, [])
 
   return (
     <>
       <Head>
-        <title>{'Sign In'}</title>
+        <title>{'Course Management Assistant: Sign In'}</title>
       </Head>
 
-      <Row justify="center">
-        <Col md={8}>
-          <div className={styles.FormHeading}>
-            <h1>Sign In</h1>
-          </div>
-
-          <div className={styles.FormBody}>
+      <div>
+        <h1 className={styles.FormHeading}>COURSE MANAGEMENT ASSISTANT</h1>
+        <Row justify="center">
+          <Col md={8}>
             <Form
               name="normal_login"
               className="login-form"
@@ -31,14 +41,7 @@ const Login: NextPage = () => {
               }}
               onFinish={onFinish}
             >
-              <Form.Item
-                name="role"
-                rules={[
-                  {
-                    message: 'Please pick an item!',
-                  },
-                ]}
-              >
+              <Form.Item name="role">
                 <Radio.Group>
                   <Radio.Button value="student">Student</Radio.Button>
                   <Radio.Button value="teacher">Teacher</Radio.Button>
@@ -73,6 +76,7 @@ const Login: NextPage = () => {
                   {
                     min: 4,
                     max: 16,
+                    message: `'password' must be 4-16 characters long`,
                   },
                 ]}
               >
@@ -96,9 +100,9 @@ const Login: NextPage = () => {
                 No account? <a href="">register now!</a>
               </Form.Item>
             </Form>
-          </div>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </div>
     </>
   )
 }
