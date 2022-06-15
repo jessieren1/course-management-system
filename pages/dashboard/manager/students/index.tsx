@@ -1,21 +1,23 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import type { ReactElement } from 'react'
 import { useState, useEffect } from 'react'
 import { Table, Space, Input, Button, Row, Col } from 'antd'
-import DashboardLayout from '../../../../components/dashboardLayout'
+import Layout from '../../../../components/layout'
 import { getStudentList } from '../../../../lib/httpRequest'
 import { formatDistanceToNow } from 'date-fns'
 import { PlusOutlined } from '@ant-design/icons'
 import { debounce } from 'lodash'
+import { Student, CourseType, StudentType } from '../../../../lib/model'
 import { ColumnType } from 'antd/lib/table'
-import { CourseType, Student, StudentType } from '../../../../lib/model'
+import StudentModal from '../../../../components/student/studentModal'
 
 export default function Dashboard() {
   const [paginator, setPaginator] = useState({ page: 1, limit: 20 })
   const [total, setTotal] = useState(0)
   const [data, setData] = useState([])
   const [queryName, setQueryName] = useState('')
+
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
   useEffect(() => {
     getStudentList({ ...paginator, query: queryName }).then((res) => {
@@ -32,14 +34,14 @@ export default function Dashboard() {
       key: 'index',
       width: 60,
       fixed: 'left',
-      render: (text, record, index) => index + 1,
+      render: (_value, _record, index) => index + 1,
     },
     {
       title: 'Name',
       dataIndex: 'name',
       width: 150,
       fixed: 'left',
-      render: (text, record) => (
+      render: (_value, record) => (
         <Link href={`/dashboard/manager/students/${record.id}`}>
           {record.name}
         </Link>
@@ -72,14 +74,14 @@ export default function Dashboard() {
       title: 'Join Time',
       dataIndex: 'createdAt',
       width: 100,
-      render: (date) =>
+      render: (date: Date) =>
         formatDistanceToNow(new Date(date), { addSuffix: true }),
     },
     {
       title: 'Action',
       dataIndex: 'action',
       width: 100,
-      render: (text, record: object) => (
+      render: () => (
         <Space size="middle">
           <a>Edit</a>
           <a>Delete</a>
@@ -89,14 +91,18 @@ export default function Dashboard() {
   ]
 
   return (
-    <>
+    <Layout>
       <Head>
         <title>{'CMS DashBoard: Manager'}</title>
       </Head>
       <div>
         <Row style={{ justifyContent: 'space-between', marginBottom: 16 }}>
           <Col>
-            <Button type="primary" icon={<PlusOutlined />}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalVisible(true)}
+            >
               Add
             </Button>
           </Col>
@@ -108,7 +114,7 @@ export default function Dashboard() {
           </Col>
         </Row>
         <Table
-          rowKey={(record) => record.id}
+          rowKey={(record) => record.id.toString()}
           columns={columns}
           pagination={{
             defaultPageSize: 20,
@@ -116,13 +122,13 @@ export default function Dashboard() {
             onChange: (page, limit) => setPaginator({ page, limit }),
           }}
           dataSource={data}
-          scroll={{ y: 300 }}
+          scroll={{ y: 400 }}
+        />
+        <StudentModal
+          isModalVisible={isModalVisible}
+          setIsModalVisible={setIsModalVisible}
         />
       </div>
-    </>
+    </Layout>
   )
-}
-
-Dashboard.getLayout = function getLayout(data: any, component: ReactElement) {
-  return <DashboardLayout>{component}</DashboardLayout>
 }
